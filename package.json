@@ -1,0 +1,23 @@
+{
+  "name": "frontend-installer",
+  "version": "1.0.0",
+  "description": "Installer to locally install npm packages that are used for the Molgenis Frontend",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx rollup main.js --file dist/install-frontend.js --format cjs -c"
+  },
+  "author": "Jelmer Veen <github.com/jelmerveen>",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.0"
+  },
+  "dependencies": {
+    "@molgenis-ui/components-library": "^2.7.16",
+    "@molgenis/expressions": "^0.21.2",
+    "fs-extra": "^10.1.0"
+  }
+}

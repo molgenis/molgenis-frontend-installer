@@ -14,28 +14,54 @@ const packageJson = `{
    "license": "ISC"
 }`
 
-function createPackageJson () {
-    if (!existsSync('package.json')) {
-        writeFileSync('package.json', packageJson);
-    }
-    return;
-}
-
 async function installPackages () {
 
     return new Promise(resolve => {
 
         readFile('./frontend_dependencies.yaml', (_, contents) => {
             const ymlContents = contents.toString('utf-8').split('\n');
-            const packagesToInstall = ymlContents.filter(pkg => !pkg)
+            const packagesToInstall = ymlContents.filter(pkg => pkg)
 
             for (const pkg of packagesToInstall) {
                 console.log(`installing ${pkg}`)
                 execSync(`npm install --omit=dev ${pkg}`);
             }
+
+            console.log('Cleaning up folders')
+            cleanup();
             resolve();
         })
     })
+}
+
+function prepare () {
+
+    return new Promise(resolve => {
+        if (existsSync('package.json')) {
+            console.log('Removing package.json');
+            fsExtra.remove('package.json')
+        }
+
+        if (existsSync('package-lock.json')) {
+            console.log('Removing package-lock.json');
+            fsExtra.remove('package-lock.json')
+        }
+
+        if (existsSync('@molgenis-ui')) {
+            console.log('Removing @molgenis-ui');
+            fsExtra.emptyDirSync('@molgenis-ui');
+            fsExtra.removeSync('@molgenis-ui');
+        }
+        if (existsSync('@molgenis')) {
+            console.log('Removing @molgenis');
+            fsExtra.emptyDirSync('@molgenis');
+            fsExtra.removeSync('@molgenis');
+        }
+
+        console.log('Creating package.json')
+        writeFileSync('package.json', packageJson);
+        resolve();
+    });
 }
 
 function cleanup () {
@@ -47,14 +73,11 @@ function cleanup () {
 
 async function execute () {
     console.log('Installer started');
-    console.log('Creating package.json')
-    createPackageJson();
+    console.log('Checking for old files')
+    await prepare();
 
     console.log('Installing packages')
     await installPackages();
-
-    console.log('Cleaning up folders')
-    cleanup();
 }
 
 execute();

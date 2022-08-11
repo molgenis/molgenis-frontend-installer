@@ -2852,28 +2852,54 @@ const packageJson = `{
    "license": "ISC"
 }`;
 
-function createPackageJson () {
-    if (!require$$0$2.existsSync('package.json')) {
-        require$$0$2.writeFileSync('package.json', packageJson);
-    }
-    return;
-}
-
 async function installPackages () {
 
     return new Promise(resolve => {
 
         require$$0$2.readFile('./frontend_dependencies.yaml', (_, contents) => {
             const ymlContents = contents.toString('utf-8').split('\n');
-            const packagesToInstall = ymlContents.filter(pkg => !pkg);
+            const packagesToInstall = ymlContents.filter(pkg => pkg);
 
             for (const pkg of packagesToInstall) {
                 console.log(`installing ${pkg}`);
                 child_process.execSync(`npm install --omit=dev ${pkg}`);
             }
+
+            console.log('Cleaning up folders');
+            cleanup();
             resolve();
         });
     })
+}
+
+function prepare () {
+
+    return new Promise(resolve => {
+        if (require$$0$2.existsSync('package.json')) {
+            console.log('Removing package.json');
+            lib.remove('package.json');
+        }
+
+        if (require$$0$2.existsSync('package-lock.json')) {
+            console.log('Removing package-lock.json');
+            lib.remove('package-lock.json');
+        }
+
+        if (require$$0$2.existsSync('@molgenis-ui')) {
+            console.log('Removing @molgenis-ui');
+            lib.emptyDirSync('@molgenis-ui');
+            lib.removeSync('@molgenis-ui');
+        }
+        if (require$$0$2.existsSync('@molgenis')) {
+            console.log('Removing @molgenis');
+            lib.emptyDirSync('@molgenis');
+            lib.removeSync('@molgenis');
+        }
+
+        console.log('Creating package.json');
+        require$$0$2.writeFileSync('package.json', packageJson);
+        resolve();
+    });
 }
 
 function cleanup () {
@@ -2885,14 +2911,11 @@ function cleanup () {
 
 async function execute () {
     console.log('Installer started');
-    console.log('Creating package.json');
-    createPackageJson();
+    console.log('Checking for old files');
+    await prepare();
 
     console.log('Installing packages');
     await installPackages();
-
-    console.log('Cleaning up folders');
-    cleanup();
 }
 
 execute();

@@ -24,7 +24,14 @@ async function installPackages () {
 
             for (const pkg of packagesToInstall) {
                 console.log(`installing ${pkg}`)
-                execSync(`npm install --omit=dev ${pkg}`);
+                const exactInstall = /@([0-9])/.test(pkg)
+
+                if(exactInstall) {
+                    execSync(`npm install --omit=dev ${pkg} --save --save-exact`);
+                }
+                else {
+                    execSync(`npm install --omit=dev ${pkg} --save`);
+                }
             }
 
             console.log('Cleaning up folders')

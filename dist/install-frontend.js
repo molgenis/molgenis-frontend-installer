@@ -2862,7 +2862,14 @@ async function installPackages () {
 
             for (const pkg of packagesToInstall) {
                 console.log(`installing ${pkg}`);
-                child_process.execSync(`npm install --omit=dev ${pkg}`);
+                const exactInstall = /@([0-9])/.test(pkg);
+
+                if(exactInstall) {
+                    child_process.execSync(`npm install --omit=dev ${pkg} --save --save-exact`);
+                }
+                else {
+                    child_process.execSync(`npm install --omit=dev ${pkg} --save`);
+                }
             }
 
             console.log('Cleaning up folders');
